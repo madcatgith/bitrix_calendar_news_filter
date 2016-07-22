@@ -12,38 +12,6 @@
 /** @var CBitrixComponent $component */
 $this->setFrameMode(true);
 ?>
-<!--<form name="<?echo $arResult["FILTER_NAME"]."_form"?>" action="<?echo $arResult["FORM_ACTION"]?>" method="get">
-	<?foreach($arResult["ITEMS"] as $arItem):
-		if(array_key_exists("HIDDEN", $arItem)):
-			echo $arItem["INPUT"];
-		endif;
-	endforeach;?>
-	<table class="data-table" cellspacing="0" cellpadding="2">
-	<thead>
-		<tr>
-			<td colspan="2" align="center"><?=GetMessage("IBLOCK_FILTER_TITLE")?></td>
-		</tr>
-	</thead>
-	<tbody>
-		<?foreach($arResult["ITEMS"] as $arItem):?>
-			<?if(!array_key_exists("HIDDEN", $arItem)):?>
-				<tr>
-					<td valign="top"><?=$arItem["NAME"]?>:</td>
-					<td valign="top"><?=$arItem["INPUT"]?></td>
-				</tr>
-			<?endif?>
-		<?endforeach;?>
-	</tbody>
-	<tfoot>
-		<tr>
-			<td colspan="2">
-				<input type="submit" name="set_filter" value="<?=GetMessage("IBLOCK_SET_FILTER")?>" /><input type="hidden" name="set_filter" value="Y" />&nbsp;&nbsp;<input type="submit" name="del_filter" value="<?=GetMessage("IBLOCK_DEL_FILTER")?>" /></td>
-		</tr>
-	</tfoot>
-	</table>
-</form>-->
-
-
 
 <table id="calendar2">
   <thead>
@@ -54,6 +22,9 @@ $this->setFrameMode(true);
 
 <script>
 function Calendar2(id, year, month) {
+
+var filter = 'arrFilter'; //Переменная для фильтра, указываеться в настройках фильтра и newlist. Служить для связи листа и фильтра.
+
 var Dlast = new Date(year,month+1,0).getDate(),
     D = new Date(year,month,Dlast),
     currmonth = month+1,
@@ -69,20 +40,27 @@ if (DNfirst != 0) {
 }else{
   for(var  i = 0; i < 6; i++) calendar += '<td>';
 }
+
+/*Сортировка происходит с помощью указания в запросе начальной и конечной даты активности. 
+Чтобы отсортировать по дате за выбранный день нужно указать датой окончания завтрашний.
+Дата должна быть вида 01.01.0001*/
+
 for(var  i = 1; i <= Dlast; i++) {
+
+//Формируем строку с датой начала активности
   if (i<10){
-     var start_filter_date='0'+i+'.'+currmonth+'.'+year;
+     var start_filter_date='0'+i+'.'+currmonth+'.'+year; //добавляем ноль перед датой из одной цифры 
   }
   else{
     var start_filter_date=i+'.'+currmonth+'.'+year;
   }
-
-  var end_filter_date=nextday(i,currmonth,year);
+//
+  var end_filter_date=nextday(i,currmonth,year); //строка с датой конца активности (следующий день);
 
   if (i == new Date().getDate() && D.getFullYear() == new Date().getFullYear() && D.getMonth() == new Date().getMonth()) {
-    calendar += '<td class="today">' +'<a href="?arrFilter_DATE_ACTIVE_FROM_1='+start_filter_date+'&arrFilter_DATE_ACTIVE_FROM_2='+end_filter_date+'&set_filter=Фильтр&set_filter=Y">' + i + '</a>';
+    calendar += '<td class="today">' +'<a href="?'+filter+'_DATE_ACTIVE_FROM_1='+start_filter_date+'&arrFilter_DATE_ACTIVE_FROM_2='+end_filter_date+'&set_filter=Фильтр&set_filter=Y">' + i + '</a>';
   }else{
-    calendar += '<td>' +'<a href="?arrFilter_DATE_ACTIVE_FROM_1='+start_filter_date+'&arrFilter_DATE_ACTIVE_FROM_2='+end_filter_date+'&set_filter=Фильтр&set_filter=Y">' + i + '</a>';
+    calendar += '<td>' +'<a href="?'+filter+'_DATE_ACTIVE_FROM_1='+start_filter_date+'&arrFilter_DATE_ACTIVE_FROM_2='+end_filter_date+'&set_filter=Фильтр&set_filter=Y">' + i + '</a>';
   }
   
   if (new Date(D.getFullYear(),D.getMonth(),i).getDay() == 0) {
@@ -108,6 +86,7 @@ document.querySelector('#calendar2 thead tr:nth-child(1) td:nth-child(3)').oncli
   Calendar2("calendar2", document.querySelector('#calendar2 thead td:nth-child(2)').dataset.year, parseFloat(document.querySelector('#calendar2 thead td:nth-child(2)').dataset.month)+1);
 }
 
+//Функция получает месяц дату день и возвращает завтрашний день в виде 02.01.0001
 function nextday(day,month,year){
   var y = parseInt(year);
   var m = parseInt(month)-1;
